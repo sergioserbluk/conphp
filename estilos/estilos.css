@@ -1,0 +1,17 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.Loguin{
+    width: 30%;
+    height: 40%;
+    background-color: bisque;
+    border-radius: 6px;
+    border-color: black;
+    border-style: double;
+    margin: auto;
+    margin-top: 20%;
+    text-align: center;
+}
