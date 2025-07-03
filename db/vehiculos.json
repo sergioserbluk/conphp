@@ -1,18 +1,18 @@
 [
-  {
-    "id": 1,
-    "marca": "Ford",
-    "modelo": "Focus",
-    "anio": 2018,
-    "precio": 15000,
-    "reservado": false
-  },
-  {
-    "id": 2,
-    "marca": "Chevrolet",
-    "modelo": "Cruze",
-    "anio": 2017,
-    "precio": 14000,
-    "reservado": false
-  }
+    {
+        "id": 1,
+        "marca": "Ford",
+        "modelo": "Focus",
+        "anio": 2018,
+        "precio": 15000,
+        "reservado": false
+    },
+    {
+        "id": 2,
+        "marca": "Chevrolet",
+        "modelo": "Cruze",
+        "anio": 2017,
+        "precio": 14000,
+        "reservado": false
+    }
 ]
