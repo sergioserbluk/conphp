@@ -1,68 +1,60 @@
 <?php
 
-const DATA_FILE = __DIR__ . '/../db/vehiculos.json';
+require_once __DIR__ . '/coneccion.php';
 
 function cargarVehiculos() {
-    if (!file_exists(DATA_FILE)) {
-        return [];
-    }
-    $json = file_get_contents(DATA_FILE);
-    $data = json_decode($json, true);
-    return $data ?: [];
+    global $pdo;
+    $stmt = $pdo->query('SELECT id, marca, modelo, anio, precio, reservado FROM vehiculos');
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 function guardarVehiculos($vehiculos) {
-    $json = json_encode($vehiculos, JSON_PRETTY_PRINT);
-    file_put_contents(DATA_FILE, $json);
+    // Esta función ya no es necesaria con base de datos, se deja por compatibilidad
 }
 
 function obtenerVehiculo($id) {
-    $vehiculos = cargarVehiculos();
-    foreach ($vehiculos as $v) {
-        if ($v['id'] == $id) {
-            return $v;
-        }
-    }
-    return null;
+    global $pdo;
+    $stmt = $pdo->prepare('SELECT id, marca, modelo, anio, precio, reservado FROM vehiculos WHERE id = ?');
+    $stmt->execute([$id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 function agregarVehiculo($nuevo) {
-    $vehiculos = cargarVehiculos();
-    $nuevo['id'] = obtenerSiguienteId($vehiculos);
-    $vehiculos[] = $nuevo;
-    guardarVehiculos($vehiculos);
-}
-
-function obtenerSiguienteId($vehiculos) {
-    $max = 0;
-    foreach ($vehiculos as $v) {
-        if ($v['id'] > $max) {
-            $max = $v['id'];
-        }
-    }
-    return $max + 1;
+    global $pdo;
+    $sql = 'INSERT INTO vehiculos (marca, modelo, anio, precio, reservado) VALUES (?, ?, ?, ?, ?)';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        $nuevo['marca'],
+        $nuevo['modelo'],
+        $nuevo['anio'],
+        $nuevo['precio'],
+        $nuevo['reservado'] ?? 0
+    ]);
+    return $pdo->lastInsertId();
 }
 
 function actualizarVehiculo($id, $datos) {
-    $vehiculos = cargarVehiculos();
-    foreach ($vehiculos as &$v) {
-        if ($v['id'] == $id) {
-            $v = array_merge($v, $datos);
-            break;
-        }
-    }
-    guardarVehiculos($vehiculos);
+    global $pdo;
+    $sql = 'UPDATE vehiculos SET marca = ?, modelo = ?, anio = ?, precio = ? WHERE id = ?';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        $datos['marca'],
+        $datos['modelo'],
+        $datos['anio'],
+        $datos['precio'],
+        $id
+    ]);
 }
 
 function eliminarVehiculo($id) {
-    $vehiculos = cargarVehiculos();
-    $vehiculos = array_filter($vehiculos, function($v) use ($id) {
-        return $v['id'] != $id;
-    });
-    guardarVehiculos(array_values($vehiculos));
+    global $pdo;
+    $stmt = $pdo->prepare('DELETE FROM vehiculos WHERE id = ?');
+    $stmt->execute([$id]);
 }
 
 function cambiarEstadoReservado($id, $reservado) {
-    actualizarVehiculo($id, ['reservado' => $reservado]);
+    global $pdo;
+    $stmt = $pdo->prepare('UPDATE vehiculos SET reservado = ? WHERE id = ?');
+    $stmt->execute([$reservado, $id]);
 }
 ?>

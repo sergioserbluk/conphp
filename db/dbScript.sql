@@ -86,14 +86,13 @@ INSERT INTO `usuarios` (`correoElectronico`, `nombre`, `apellido`, `dni`, `pas`)
 --
 
 CREATE TABLE `vehiculos` (
-  `dominio` varchar(15) NOT NULL,
-  `id_marca` int(20) NOT NULL,
-  `id_modelo` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `marca` varchar(20) NOT NULL,
+  `modelo` varchar(20) NOT NULL,
   `anio` int(11) NOT NULL,
   `precio` decimal(10,0) NOT NULL,
-  `estado` varchar(15) NOT NULL,
-  `condicion` varchar(15) NOT NULL,
-  `oportunidad` tinyint(1) NOT NULL
+  `reservado` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -145,6 +144,12 @@ ALTER TABLE `marcas`
 --
 ALTER TABLE `modelos`
   MODIFY `id_modelo` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `vehiculos`
+--
+ALTER TABLE `vehiculos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
