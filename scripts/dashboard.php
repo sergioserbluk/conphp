@@ -239,5 +239,24 @@ $vehiculos = cargarVehiculos();
             </table>
         </div>
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (location.hash) {
+            var triggerEl = document.querySelector('button[data-bs-target="' + location.hash + '"]');
+            if (triggerEl) {
+                bootstrap.Tab.getOrCreateInstance(triggerEl).show();
+            }
+        }
+
+        var tabButtons = document.querySelectorAll('button[data-bs-toggle="tab"]');
+        tabButtons.forEach(function (button) {
+            button.addEventListener('shown.bs.tab', function (event) {
+                var target = event.target.getAttribute('data-bs-target');
+                history.replaceState(null, '', target);
+            });
+        });
+    });
+    </script>
 </body>
 </html>
