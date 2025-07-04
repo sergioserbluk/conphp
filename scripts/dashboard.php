@@ -1,7 +1,9 @@
 <?php
 require_once __DIR__ . '/vehiculoService.php';
+require_once __DIR__ . '/usuarioService.php';
 
 $accion = $_POST['accion'] ?? $_GET['accion'] ?? null;
+$accionUsr = $_POST['accionUsr'] ?? $_GET['accionUsr'] ?? null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($accion === 'agregar') {
@@ -22,6 +24,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'precio' => (float)$_POST['precio']
         ];
         actualizarVehiculo($id, $datos);
+    } elseif ($accionUsr === 'agregar') {
+        $nuevoUsr = [
+            'correoElectronico' => $_POST['correoElectronico'],
+            'nombre' => $_POST['nombre'],
+            'apellido' => $_POST['apellido'],
+            'dni' => (int)$_POST['dni'],
+            'pas' => $_POST['pas']
+        ];
+        agregarUsuario($nuevoUsr);
+        header('Location: dashboard.php#users');
+        exit;
+    } elseif ($accionUsr === 'actualizar') {
+        $correo = $_POST['correoElectronico'];
+        $datosUsr = [
+            'nombre' => $_POST['nombre'],
+            'apellido' => $_POST['apellido'],
+            'dni' => (int)$_POST['dni'],
+            'pas' => $_POST['pas'] ?? ''
+        ];
+        actualizarUsuario($correo, $datosUsr);
+        header('Location: dashboard.php#users');
+        exit;
     }
     header('Location: dashboard.php');
     exit;
@@ -45,6 +69,12 @@ if ($accion === 'reservar' && isset($_GET['id'])) {
 $vehiculoEditar = null;
 if ($accion === 'editar' && isset($_GET['id'])) {
     $vehiculoEditar = obtenerVehiculo((int)$_GET['id']);
+}
+
+$usuarios = cargarUsuarios();
+$usuarioEditar = null;
+if ($accionUsr === 'editar' && isset($_GET['correo'])) {
+    $usuarioEditar = obtenerUsuario($_GET['correo']);
 }
 
 $vehiculos = cargarVehiculos();
@@ -145,7 +175,69 @@ $vehiculos = cargarVehiculos();
         </div>
         <div class="tab-pane fade p-3" id="profile" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">Sección en construcción</div>
         <div class="tab-pane fade p-3" id="contact" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">Sección en construcción</div>
-        <div class="tab-pane fade p-3" id="users" role="tabpanel" aria-labelledby="users-tab" tabindex="0">Gestión de usuarios próximamente</div>
+        <div class="tab-pane fade p-3" id="users" role="tabpanel" aria-labelledby="users-tab" tabindex="0">
+            <h2><?php echo $usuarioEditar ? 'Editar Usuario' : 'Nuevo Usuario'; ?></h2>
+            <form method="post" class="row g-3">
+                <?php if ($usuarioEditar): ?>
+                    <input type="hidden" name="accionUsr" value="actualizar">
+                    <input type="hidden" name="correoElectronico" value="<?php echo $usuarioEditar['correoElectronico']; ?>">
+                <?php else: ?>
+                    <input type="hidden" name="accionUsr" value="agregar">
+                <?php endif; ?>
+                <div class="col-md-3">
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" name="correoElectronico" class="form-control" value="<?php echo $usuarioEditar['correoElectronico'] ?? ''; ?>" <?php echo $usuarioEditar ? 'readonly' : 'required'; ?>>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" name="nombre" class="form-control" value="<?php echo $usuarioEditar['nombre'] ?? ''; ?>" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Apellido</label>
+                    <input type="text" name="apellido" class="form-control" value="<?php echo $usuarioEditar['apellido'] ?? ''; ?>" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">DNI</label>
+                    <input type="number" name="dni" class="form-control" value="<?php echo $usuarioEditar['dni'] ?? ''; ?>" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Contraseña<?php if ($usuarioEditar) echo ' (dejar en blanco para no cambiar)'; ?></label>
+                    <input type="password" name="pas" class="form-control">
+                </div>
+                <div class="col-md-2 align-self-end">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <?php if ($usuarioEditar): ?>
+                        <a href="dashboard.php#users" class="btn btn-secondary">Cancelar</a>
+                    <?php endif; ?>
+                </div>
+            </form>
+            <hr>
+            <h3>Listado de Usuarios</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Correo</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>DNI</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($usuarios as $u): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($u['correoElectronico']); ?></td>
+                        <td><?php echo htmlspecialchars($u['nombre']); ?></td>
+                        <td><?php echo htmlspecialchars($u['apellido']); ?></td>
+                        <td><?php echo $u['dni']; ?></td>
+                        <td>
+                            <a class="btn btn-sm btn-warning" href="?accionUsr=editar&correo=<?php echo urlencode($u['correoElectronico']); ?>#users">Editar</a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </body>
 </html>
