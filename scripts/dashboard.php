@@ -1,82 +1,89 @@
 <?php
-require 'coneccion.php';
+require_once __DIR__ . '/vehiculoService.php';
+require_once __DIR__ . '/usuarioService.php';
 
-// Obtener marcas y modelos de la base de datos
-$sqlVehiculos = "SELECT m.nombre AS marca, md.nombre AS modelo
-        FROM marcas m
-        JOIN modelos md ON md.marca_id = m.id
-        ORDER BY m.nombre, md.nombre";
-$vehiculos = $pdo->query($sqlVehiculos)->fetchAll();
+$accion = $_POST['accion'] ?? $_GET['accion'] ?? null;
+$accionUsr = $_POST['accionUsr'] ?? $_GET['accionUsr'] ?? null;
 
-// Obtener usuarios de la base de datos
-$sqlUsuarios = "SELECT dni, pas FROM usuarios ORDER BY dni";
-$usuarios = $pdo->query($sqlUsuarios)->fetchAll();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($accion === 'agregar') {
+        $nuevo = [
+            'marca' => $_POST['marca'],
+            'modelo' => $_POST['modelo'],
+            'anio' => (int)$_POST['anio'],
+            'precio' => (float)$_POST['precio'],
+            'reservado' => false
+        ];
+        agregarVehiculo($nuevo);
+    } elseif ($accion === 'actualizar') {
+        $id = (int)$_POST['id'];
+        $datos = [
+            'marca' => $_POST['marca'],
+            'modelo' => $_POST['modelo'],
+            'anio' => (int)$_POST['anio'],
+            'precio' => (float)$_POST['precio']
+        ];
+        actualizarVehiculo($id, $datos);
+    } elseif ($accionUsr === 'agregar') {
+        $nuevoUsr = [
+            'correoElectronico' => $_POST['correoElectronico'],
+            'nombre' => $_POST['nombre'],
+            'apellido' => $_POST['apellido'],
+            'dni' => (int)$_POST['dni'],
+            'pas' => $_POST['pas']
+        ];
+        agregarUsuario($nuevoUsr);
+        header('Location: dashboard.php#users');
+        exit;
+    } elseif ($accionUsr === 'actualizar') {
+        $correo = $_POST['correoElectronico'];
+        $datosUsr = [
+            'nombre' => $_POST['nombre'],
+            'apellido' => $_POST['apellido'],
+            'dni' => (int)$_POST['dni'],
+            'pas' => $_POST['pas'] ?? ''
+        ];
+        actualizarUsuario($correo, $datosUsr);
+        header('Location: dashboard.php#users');
+        exit;
+    }
+    header('Location: dashboard.php');
+    exit;
+}
+
+if ($accion === 'eliminar' && isset($_GET['id'])) {
+    eliminarVehiculo((int)$_GET['id']);
+    header('Location: dashboard.php');
+    exit;
+}
+
+if ($accion === 'reservar' && isset($_GET['id'])) {
+    $veh = obtenerVehiculo((int)$_GET['id']);
+    if ($veh) {
+        cambiarEstadoReservado($veh['id'], !$veh['reservado']);
+    }
+    header('Location: dashboard.php');
+    exit;
+}
+
+$vehiculoEditar = null;
+if ($accion === 'editar' && isset($_GET['id'])) {
+    $vehiculoEditar = obtenerVehiculo((int)$_GET['id']);
+}
+
+$usuarios = cargarUsuarios();
+$usuarioEditar = null;
+if ($accionUsr === 'editar' && isset($_GET['correo'])) {
+    $usuarioEditar = obtenerUsuario($_GET['correo']);
+}
+
+$vehiculos = cargarVehiculos();
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
-    <title>Dashboard</title>
-    <style>
-        nav a { margin-right: 1rem; }
-        section { display: none; }
-        section.active { display: block; }
-    </style>
-    <script>
-    function showTab(id) {
-        document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-    </script>
-</head>
-<body>
-    <nav>
-        <a href="#" onclick="showTab('vehiculos'); return false;">Vehículos</a>
-        <a href="#" onclick="showTab('usuarios'); return false;">Usuarios</a>
-    </nav>
-
-    <section id="vehiculos" class="active">
-        <h1>Vehículos registrados</h1>
-        <table border="1" cellpadding="5" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>Marca</th>
-                    <th>Modelo</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($vehiculos as $v): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($v['marca']); ?></td>
-                    <td><?php echo htmlspecialchars($v['modelo']); ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </section>
-
-    <section id="usuarios">
-        <h1>Usuarios registrados</h1>
-        <table border="1" cellpadding="5" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>DNI</th>
-                    <th>Contraseña</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($usuarios as $u): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($u['dni']); ?></td>
-                    <td><?php echo htmlspecialchars($u['pas']); ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </section>
-=======
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
     <title>Dashboard</title>
