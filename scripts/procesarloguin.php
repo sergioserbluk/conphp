@@ -8,8 +8,7 @@ require 'coneccion.php';
     $stmt->execute();
     $usuario = $stmt->fetch();
 
-    #if ($usuario && password_verify($clave, $usuario['clave'])) {
-    if ($usuario && $usuario['pas'] === $pas) {
+    if ($usuario && password_verify($pas, $usuario['pas'])) {
         
         header("Location: dashboard.php");
         exit;
